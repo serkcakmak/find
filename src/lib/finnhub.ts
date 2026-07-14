@@ -18,3 +18,13 @@ export async function getMarketNews() {
   const data = await res.json();
   return data.slice(0, 50); // Return top 50 news items
 }
+
+export async function getStockCandles(symbol: string, resolution: string, from: number, to: number) {
+  const url = `https://finnhub.io/api/v1/stock/candle?symbol=${symbol}&resolution=${resolution}&from=${from}&to=${to}&token=${process.env.FINNHUB_API_KEY}`;
+  
+  const res = await fetch(url, { next: { revalidate: 3600 } }); // Cache for 1 hour
+  if (!res.ok) {
+    return null;
+  }
+  return res.json();
+}
