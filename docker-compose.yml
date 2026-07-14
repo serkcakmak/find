@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: find-app-web
+    restart: unless-stopped
+    ports:
+      - "3008:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge
