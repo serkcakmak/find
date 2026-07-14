@@ -1,0 +1,17 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -p 23422 -o StrictHostKeyChecking=no root@185.99.199.134
+expect "password:"
+send "4cBpmC7ffGYX\r"
+expect "# "
+send "mkdir -p /opt/find-app && cd /opt/find-app\r"
+expect "# "
+send "if \[ -d .git \]; then git pull; else git clone https://github.com/serkcakmak/find.git . ; fi\r"
+expect "Username" {
+    puts "\n[ERROR] Repository is private. Authentication needed."
+    exit 1
+} "# "
+send "docker compose up -d --build\r"
+expect "# "
+send "exit\r"
+expect eof
