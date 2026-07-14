@@ -21,7 +21,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "GEMINI_API_KEY is missing." }, { status: 500 });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
     // Fetch latest news from Yahoo Finance wrapper
     const searchResult = await getMarketNews();
