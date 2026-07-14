@@ -1,5 +1,6 @@
-import yahooFinance from 'yahoo-finance2';
+import YahooFinanceClass from 'yahoo-finance2';
 
+const yahooFinance = new YahooFinanceClass();
 export async function getStockCandles(symbol: string, from: Date, to: Date): Promise<any[] | null> {
   try {
     const queryOptions = { 
