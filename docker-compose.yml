@@ -9,6 +9,8 @@ services:
     restart: unless-stopped
     ports:
       - "3008:3000"
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://find_user:FindStrongPass123!@db:5432/find_db?schema=public
