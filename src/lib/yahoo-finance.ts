@@ -32,6 +32,7 @@ export async function getMarketNews() {
       datetime: new Date(item.providerPublishTime).getTime() / 1000,
       headline: item.title,
       summary: "",
+      relatedTickers: item.relatedTickers || [],
     }));
   } catch (error) {
     console.error("Yahoo Finance News Error:", error);
