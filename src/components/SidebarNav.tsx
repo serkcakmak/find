@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Newspaper } from "lucide-react";
+import { BarChart3, Newspaper, Briefcase } from "lucide-react";
 
 export function SidebarNav() {
   const pathname = usePathname();
@@ -19,6 +19,7 @@ export function SidebarNav() {
       >
         <Newspaper className="w-5 h-5" /> Dashboard
       </Link>
+      
       <Link 
         href="/analysis" 
         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
@@ -28,6 +29,17 @@ export function SidebarNav() {
         }`}
       >
         <BarChart3 className="w-5 h-5" /> Analizler
+      </Link>
+
+      <Link 
+        href="/portfolio" 
+        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+          pathname === "/portfolio" 
+            ? "bg-blue-500/10 text-blue-400 border border-blue-500/20" 
+            : "text-gray-400 hover:text-white hover:bg-white/5"
+        }`}
+      >
+        <Briefcase className="w-5 h-5" /> Portföyüm
       </Link>
     </nav>
   );

@@ -1,7 +1,9 @@
 import { auth } from "@/auth";
 import { TechnicalChart } from "@/components/TechnicalChart";
 import { SymbolSearch } from "@/components/SymbolSearch";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { getStockCandles } from "@/lib/yahoo-finance";
+import { getFavorites } from "@/app/actions/favorites";
 import { Activity } from "lucide-react";
 import Link from "next/link";
 
@@ -23,6 +25,10 @@ export default async function AnalysisPage({
 
   // Fetch data
   const rawData = await getStockCandles(symbol, from, to);
+  
+  // Fetch user favorites
+  const favorites = await getFavorites();
+  const isFavorited = favorites.includes(symbol);
 
   let chartData: any[] = [];
   
@@ -50,9 +56,14 @@ export default async function AnalysisPage({
   return (
     <>
       <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Teknik Analiz</h1>
-          <p className="text-gray-400 mt-1">Gelişmiş mum grafikleri ve piyasa göstergeleri.</p>
+        <div className="flex items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Teknik Analiz</h1>
+            <p className="text-gray-400 mt-1">Gelişmiş mum grafikleri ve piyasa göstergeleri.</p>
+          </div>
+          {session?.user && (
+            <FavoriteButton symbol={symbol} isFavorited={isFavorited} />
+          )}
         </div>
         
         {/* Search Bar */}

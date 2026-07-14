@@ -3,12 +3,20 @@ import { Activity } from "lucide-react";
 import { StockOverview } from "@/components/StockOverview";
 import { NewsFeed } from "@/components/NewsFeed";
 import { Suspense } from "react";
+import { getFavorites } from "@/app/actions/favorites";
 
 export default async function DashboardPage() {
   const session = await auth();
 
   // Varsayılan takip edilen hisseler
-  const defaultStocks = ["AAPL", "MSFT", "TSLA"];
+  let displayStocks = ["AAPL", "MSFT", "TSLA"];
+
+  if (session?.user) {
+    const favorites = await getFavorites();
+    if (favorites.length > 0) {
+      displayStocks = favorites;
+    }
+  }
 
   return (
     <>
@@ -21,7 +29,7 @@ export default async function DashboardPage() {
 
       {/* Stock Overview Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {defaultStocks.map((symbol) => (
+        {displayStocks.map((symbol) => (
           <Suspense 
             key={symbol}
             fallback={
