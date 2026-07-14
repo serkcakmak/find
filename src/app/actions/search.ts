@@ -1,6 +1,7 @@
 "use server";
 
-import yahooFinance from "yahoo-finance2";
+import YahooFinanceClass from "yahoo-finance2";
+const yahooFinance = new YahooFinanceClass();
 
 export async function searchSymbols(query: string) {
   if (!query || query.length < 2) return [];
