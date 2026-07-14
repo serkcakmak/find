@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { TechnicalChart } from "@/components/TechnicalChart";
+import { SymbolSearch } from "@/components/SymbolSearch";
 import { getStockCandles } from "@/lib/yahoo-finance";
 import { Activity } from "lucide-react";
 import Link from "next/link";
@@ -48,10 +49,15 @@ export default async function AnalysisPage({
 
   return (
     <>
-      <header className="mb-8 flex justify-between items-center">
+      <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Teknik Analiz</h1>
           <p className="text-gray-400 mt-1">Gelişmiş mum grafikleri ve piyasa göstergeleri.</p>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="w-full md:w-auto md:min-w-[320px] lg:min-w-[400px] z-50">
+          <SymbolSearch />
         </div>
       </header>
 
