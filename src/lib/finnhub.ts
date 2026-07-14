@@ -16,5 +16,5 @@ export async function getMarketNews() {
     return [];
   }
   const data = await res.json();
-  return data.slice(0, 10); // Return top 10 news items
+  return data.slice(0, 50); // Return top 50 news items
 }
