@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 10
+spawn ssh -p 23422 -o StrictHostKeyChecking=no root@185.99.199.134
+expect "password:"
+send "4cBpmC7ffGYX\r"
+expect "# "
+send "docker ps -a | grep find\r"
+expect "# "
+send "exit\r"
+expect eof
