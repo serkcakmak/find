@@ -1,3 +1,9 @@
 import YahooFinance from 'yahoo-finance2';
 const yahooFinance = new YahooFinance();
-yahooFinance.historical('AAPL', { period1: '2023-01-01', period2: '2023-02-01', interval: '1d' }).then(console.log).catch(console.error);
+
+async function run() {
+  const result = await yahooFinance.search('markets');
+  console.log(JSON.stringify(result.news.slice(0, 2), null, 2));
+}
+
+run();

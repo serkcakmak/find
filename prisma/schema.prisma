@@ -40,3 +40,17 @@ model PortfolioItem {
   updatedAt    DateTime @updatedAt
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model News {
+  id             String   @id @default(cuid())
+  originalId     String   @unique
+  headline       String
+  summary        String
+  url            String
+  image          String?
+  source         String
+  datetime       DateTime
+  sentiment      String
+  relatedTickers String[]
+  createdAt      DateTime @default(now())
+}
