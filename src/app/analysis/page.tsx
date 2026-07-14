@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { Sidebar } from "@/components/Sidebar";
 import { TechnicalChart } from "@/components/TechnicalChart";
-import { getStockCandles } from "@/lib/finnhub";
+import { getStockCandles } from "@/lib/yahoo-finance";
 import { Activity } from "lucide-react";
 import Link from "next/link";
 
@@ -17,29 +17,30 @@ export default async function AnalysisPage({
   const symbol = params?.symbol || "AAPL";
 
   // Calculate timestamps for the last 1 year
-  const to = Math.floor(Date.now() / 1000);
-  const from = to - (365 * 24 * 60 * 60);
+  const to = new Date();
+  const from = new Date();
+  from.setFullYear(to.getFullYear() - 1);
 
   // Fetch data
-  const rawData = await getStockCandles(symbol, "D", from, to);
+  const rawData = await getStockCandles(symbol, from, to);
 
   let chartData: any[] = [];
   
-  if (rawData && rawData.s === "ok") {
-    // Convert Finnhub format to Lightweight Charts format
-    chartData = rawData.t.map((timestamp: number, index: number) => {
-      // Convert unix timestamp to YYYY-MM-DD
-      const date = new Date(timestamp * 1000);
+  if (rawData && rawData.length > 0) {
+    // Convert Yahoo Finance format to Lightweight Charts format
+    chartData = rawData.map((item: any) => {
+      // YF item.date is a Date object
+      const date = new Date(item.date);
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       
       return {
         time: `${year}-${month}-${day}`,
-        open: rawData.o[index],
-        high: rawData.h[index],
-        low: rawData.l[index],
-        close: rawData.c[index]
+        open: item.open,
+        high: item.high,
+        low: item.low,
+        close: item.close
       };
     });
   }
