@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getMarketNews as getYahooNews } from "@/lib/yahoo-finance";
 import { getMarketNews as getFinnhubNews } from "@/lib/finnhub";
+import { getMarketNews as getPolygonNews } from "@/lib/polygon";
 import prisma from "@/lib/prisma";
 
 // Add your GEMINI_API_KEY to .env file on the VPS
@@ -24,10 +25,11 @@ export async function GET(request: Request) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-    // Fetch latest news from Yahoo Finance wrapper and Finnhub
-    const [yahooResult, finnhubResult] = await Promise.all([
+    // Fetch latest news from Yahoo Finance, Finnhub, and Polygon
+    const [yahooResult, finnhubResult, polygonResult] = await Promise.all([
       getYahooNews(),
       getFinnhubNews(),
+      getPolygonNews(),
     ]);
 
     // Map Finnhub results to match the same structure
@@ -42,15 +44,27 @@ export async function GET(request: Request) {
       relatedTickers: item.related ? item.related.split(",") : [],
     }));
 
+    // Map Polygon results
+    const mappedPolygon = (polygonResult || []).map((item: any) => ({
+      id: String(item.id),
+      url: item.article_url,
+      image: item.image_url || null,
+      source: item.publisher?.name || "Polygon",
+      datetime: new Date(item.published_utc).getTime() / 1000, // Convert string date to seconds
+      headline: item.title,
+      summary: item.description || "",
+      relatedTickers: item.tickers || [],
+    }));
+
     // Combine and sort by datetime descending
-    const allNews = [...(yahooResult || []), ...mappedFinnhub].sort((a, b) => b.datetime - a.datetime);
+    const allNews = [...(yahooResult || []), ...mappedFinnhub, ...mappedPolygon].sort((a, b) => b.datetime - a.datetime);
 
     if (allNews.length === 0) {
       return NextResponse.json({ message: "No news found from sources." });
     }
 
-    // Limit to top 10 news items to prevent overload
-    const latestNews = allNews.slice(0, 10);
+    // Limit to top 20 news items to prevent overload, user wants 50 on screen but cron can process batches
+    const latestNews = allNews.slice(0, 20);
 
     for (const item of latestNews) {
       // Check if it already exists in DB
