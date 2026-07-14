@@ -13,6 +13,8 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://find_user:FindStrongPass123!@db:5432/find_db?schema=public
       - NEXTAUTH_SECRET=super_secret_find_app_key_123!
+      - AUTH_SECRET=super_secret_find_app_key_123!
+      - AUTH_URL=http://find.aptimio.com
       - NEXTAUTH_URL=https://find.aptimio.com
     networks:
       - webnet
