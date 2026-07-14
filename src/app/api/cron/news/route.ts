@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { getMarketNews } from "@/lib/yahoo-finance";
+import { getMarketNews as getYahooNews } from "@/lib/yahoo-finance";
+import { getMarketNews as getFinnhubNews } from "@/lib/finnhub";
 import prisma from "@/lib/prisma";
 
 // Add your GEMINI_API_KEY to .env file on the VPS
@@ -23,15 +24,33 @@ export async function GET(request: Request) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-    // Fetch latest news from Yahoo Finance wrapper
-    const searchResult = await getMarketNews();
-    if (!searchResult || searchResult.length === 0) {
-      return NextResponse.json({ message: "No news found from source." });
+    // Fetch latest news from Yahoo Finance wrapper and Finnhub
+    const [yahooResult, finnhubResult] = await Promise.all([
+      getYahooNews(),
+      getFinnhubNews(),
+    ]);
+
+    // Map Finnhub results to match the same structure
+    const mappedFinnhub = (finnhubResult || []).map((item: any) => ({
+      id: String(item.id),
+      url: item.url,
+      image: item.image || null,
+      source: item.source,
+      datetime: item.datetime, // Finnhub is in seconds
+      headline: item.headline,
+      summary: item.summary || "",
+      relatedTickers: item.related ? item.related.split(",") : [],
+    }));
+
+    // Combine and sort by datetime descending
+    const allNews = [...(yahooResult || []), ...mappedFinnhub].sort((a, b) => b.datetime - a.datetime);
+
+    if (allNews.length === 0) {
+      return NextResponse.json({ message: "No news found from sources." });
     }
 
     // Limit to top 10 news items to prevent overload
-    const latestNews = searchResult.slice(0, 10);
-    const processedCount = 0;
+    const latestNews = allNews.slice(0, 10);
 
     for (const item of latestNews) {
       // Check if it already exists in DB
