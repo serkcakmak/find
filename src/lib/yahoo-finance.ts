@@ -1,6 +1,4 @@
-import { YahooFinance } from 'yahoo-finance2';
-
-const yahooFinance = new YahooFinance();
+import yahooFinance from 'yahoo-finance2';
 
 export async function getStockCandles(symbol: string, from: Date, to: Date) {
   try {
