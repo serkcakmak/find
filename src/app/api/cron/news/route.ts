@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import yahooFinance from "yahoo-finance2";
+import { getMarketNews } from "@/lib/yahoo-finance";
 import prisma from "@/lib/prisma";
 
 // Add your GEMINI_API_KEY to .env file on the VPS
@@ -23,20 +23,20 @@ export async function GET(request: Request) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // Fetch latest news from Yahoo Finance
-    const searchResult = await yahooFinance.search('markets');
-    if (!searchResult.news || searchResult.news.length === 0) {
+    // Fetch latest news from Yahoo Finance wrapper
+    const searchResult = await getMarketNews();
+    if (!searchResult || searchResult.length === 0) {
       return NextResponse.json({ message: "No news found from source." });
     }
 
     // Limit to top 10 news items to prevent overload
-    const latestNews = searchResult.news.slice(0, 10);
+    const latestNews = searchResult.slice(0, 10);
     const processedCount = 0;
 
     for (const item of latestNews) {
       // Check if it already exists in DB
       const existing = await prisma.news.findUnique({
-        where: { originalId: item.uuid },
+        where: { originalId: item.id },
       });
 
       if (existing) continue; // Skip if already processed
@@ -53,8 +53,8 @@ export async function GET(request: Request) {
           "sentiment": "Bullish", "Bearish" veya "Neutral" (İlgili hisseler veya genel piyasa için haberin duygu analizi)
         }
 
-        Haber Başlığı: ${item.title}
-        Orijinal Link: ${item.link}
+        Haber Başlığı: ${item.headline}
+        Orijinal Link: ${item.url}
         
         (Not: Eğer haber genel piyasa hakkında ise ve bariz bir yükseliş veya düşüş yönü belirtmiyorsa "Neutral" olarak işaretle.)
       `;
@@ -66,29 +66,29 @@ export async function GET(request: Request) {
 
         await prisma.news.create({
           data: {
-            originalId: item.uuid,
-            headline: aiData.headline || item.title,
+            originalId: item.id,
+            headline: aiData.headline || item.headline,
             summary: aiData.summary || "Özet oluşturulamadı.",
-            url: item.link,
-            image: item.thumbnail?.resolutions?.[0]?.url || null,
-            source: item.publisher,
-            datetime: new Date(item.providerPublishTime),
+            url: item.url,
+            image: item.image || null,
+            source: item.source,
+            datetime: new Date(item.datetime * 1000), // datetime was in seconds
             sentiment: aiData.sentiment || "Neutral",
             relatedTickers: item.relatedTickers || [],
           },
         });
       } catch (aiError) {
-        console.error("AI Processing Error for item:", item.uuid, aiError);
+        console.error("AI Processing Error for item:", item.id, aiError);
         // Fallback to storing English if AI fails, so we don't infinitely retry the same item
         await prisma.news.create({
           data: {
-            originalId: item.uuid,
-            headline: item.title,
+            originalId: item.id,
+            headline: item.headline,
             summary: "Metin analiz edilemedi.",
-            url: item.link,
-            image: item.thumbnail?.resolutions?.[0]?.url || null,
-            source: item.publisher,
-            datetime: new Date(item.providerPublishTime),
+            url: item.url,
+            image: item.image || null,
+            source: item.source,
+            datetime: new Date(item.datetime * 1000),
             sentiment: "Neutral",
             relatedTickers: item.relatedTickers || [],
           },
