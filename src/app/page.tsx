@@ -1,14 +1,20 @@
 import { auth } from "@/auth";
 import { LogOut, Activity, BarChart3, Newspaper } from "lucide-react";
 import { signOut } from "@/auth";
+import { StockOverview } from "@/components/StockOverview";
+import { NewsFeed } from "@/components/NewsFeed";
+import { Suspense } from "react";
 
 export default async function DashboardPage() {
   const session = await auth();
 
+  // Varsayılan takip edilen hisseler
+  const defaultStocks = ["AAPL", "MSFT", "TSLA"];
+
   return (
     <div className="min-h-screen bg-[#0f1115] text-white flex">
       {/* Sidebar */}
-      <aside className="w-64 glass border-y-0 border-l-0 fixed h-full flex flex-col">
+      <aside className="w-64 glass border-y-0 border-l-0 fixed h-full flex flex-col z-50">
         <div className="p-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <Activity className="text-blue-500" /> Find Platform
@@ -48,32 +54,43 @@ export default async function DashboardPage() {
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 flex-1 p-8">
+      <main className="ml-64 flex-1 p-8 max-w-7xl">
         <header className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">Piyasa Özeti</h1>
+            <h1 className="text-3xl font-bold tracking-tight">Piyasa Özeti</h1>
             <p className="text-gray-400 mt-1">Hoş geldiniz, piyasalar şu an açık.</p>
           </div>
         </header>
 
+        {/* Stock Overview Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Skeleton Cards */}
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="glass p-6 rounded-2xl">
-              <div className="flex justify-between items-center mb-4">
-                <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
-                <div className="h-8 w-8 bg-blue-500/20 rounded-full animate-pulse" />
-              </div>
-              <div className="h-8 w-32 bg-white/10 rounded animate-pulse mb-2" />
-              <div className="h-4 w-16 bg-green-500/20 rounded animate-pulse" />
-            </div>
+          {defaultStocks.map((symbol) => (
+            <Suspense 
+              key={symbol}
+              fallback={
+                <div className="glass p-6 rounded-2xl flex flex-col justify-center animate-pulse">
+                  <div className="h-4 w-24 bg-white/10 rounded mb-4" />
+                  <div className="h-8 w-32 bg-white/10 rounded mb-2" />
+                  <div className="h-4 w-16 bg-white/10 rounded" />
+                </div>
+              }
+            >
+              <StockOverview symbol={symbol} />
+            </Suspense>
           ))}
         </div>
 
-        <div className="glass rounded-2xl p-6 h-96 flex items-center justify-center">
-          <p className="text-gray-500 flex items-center gap-2">
-            <Activity className="animate-pulse" /> Veriler yükleniyor (API entegrasyonu bekleniyor)
-          </p>
+        {/* News Feed Section */}
+        <div className="grid grid-cols-1 gap-6">
+          <Suspense fallback={
+            <div className="glass rounded-2xl p-6 h-96 flex items-center justify-center">
+              <p className="text-gray-500 flex items-center gap-2">
+                <Activity className="animate-pulse" /> Haberler yükleniyor...
+              </p>
+            </div>
+          }>
+            <NewsFeed />
+          </Suspense>
         </div>
       </main>
     </div>
