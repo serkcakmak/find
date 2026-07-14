@@ -1,4 +1,4 @@
-import { getMarketNews } from "@/lib/finnhub";
+import { getMarketNews } from "@/lib/yahoo-finance";
 import { ExternalLink, Clock } from "lucide-react";
 
 export async function NewsFeed() {

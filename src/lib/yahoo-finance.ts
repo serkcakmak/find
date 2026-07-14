@@ -18,3 +18,23 @@ export async function getStockCandles(symbol: string, from: Date, to: Date): Pro
     return null;
   }
 }
+
+export async function getMarketNews() {
+  try {
+    const results = await yahooFinance.search('markets');
+    if (!results || !results.news) return [];
+    
+    return results.news.map((item: any) => ({
+      id: item.uuid,
+      url: item.link,
+      image: item.thumbnail?.resolutions?.[0]?.url || "",
+      source: item.publisher,
+      datetime: new Date(item.providerPublishTime).getTime() / 1000,
+      headline: item.title,
+      summary: "",
+    }));
+  } catch (error) {
+    console.error("Yahoo Finance News Error:", error);
+    return [];
+  }
+}
