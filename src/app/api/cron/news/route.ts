@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { getMarketNews as getYahooNews } from "@/lib/yahoo-finance";
 import { getMarketNews as getFinnhubNews } from "@/lib/finnhub";
 import { getMarketNews as getPolygonNews } from "@/lib/polygon";
+import { getMarketNews as getMarketAuxNews } from "@/lib/marketaux";
 import prisma from "@/lib/prisma";
 
 // Add your GEMINI_API_KEY to .env file on the VPS
@@ -25,11 +26,12 @@ export async function GET(request: Request) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-    // Fetch latest news from Yahoo Finance, Finnhub, and Polygon
-    const [yahooResult, finnhubResult, polygonResult] = await Promise.all([
+    // Fetch latest news from Yahoo Finance, Finnhub, Polygon, and MarketAux
+    const [yahooResult, finnhubResult, polygonResult, marketAuxResult] = await Promise.all([
       getYahooNews(),
       getFinnhubNews(),
       getPolygonNews(),
+      getMarketAuxNews(),
     ]);
 
     // Map Finnhub results to match the same structure
@@ -56,8 +58,20 @@ export async function GET(request: Request) {
       relatedTickers: item.tickers || [],
     }));
 
+    // Map MarketAux results
+    const mappedMarketAux = (marketAuxResult || []).map((item: any) => ({
+      id: String(item.uuid),
+      url: item.url,
+      image: item.image_url || null,
+      source: item.source || "MarketAux",
+      datetime: new Date(item.published_at).getTime() / 1000, // Convert string date to seconds
+      headline: item.title,
+      summary: item.description || item.snippet || "",
+      relatedTickers: item.entities ? item.entities.map((e: any) => e.symbol) : [],
+    }));
+
     // Combine and sort by datetime descending
-    const allNews = [...(yahooResult || []), ...mappedFinnhub, ...mappedPolygon].sort((a, b) => b.datetime - a.datetime);
+    const allNews = [...(yahooResult || []), ...mappedFinnhub, ...mappedPolygon, ...mappedMarketAux].sort((a, b) => b.datetime - a.datetime);
 
     if (allNews.length === 0) {
       return NextResponse.json({ message: "No news found from sources." });
