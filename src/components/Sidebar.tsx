@@ -1,7 +1,8 @@
 import { auth } from "@/auth";
-import { LogOut, Activity, BarChart3, Newspaper } from "lucide-react";
+import { LogOut, Activity } from "lucide-react";
 import { signOut } from "@/auth";
 import Link from "next/link";
+import { SidebarNav } from "./SidebarNav";
 
 export async function Sidebar() {
   const session = await auth();
@@ -14,14 +15,7 @@ export async function Sidebar() {
         </Link>
       </div>
       
-      <nav className="flex-1 px-4 space-y-2 mt-4">
-        <Link href="/" className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl transition-colors">
-          <Newspaper className="w-5 h-5" /> Dashboard
-        </Link>
-        <Link href="/analysis" className="flex items-center gap-3 px-4 py-3 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
-          <BarChart3 className="w-5 h-5" /> Analizler
-        </Link>
-      </nav>
+      <SidebarNav />
 
       <div className="p-4 mt-auto border-t border-white/10">
         <div className="flex items-center gap-3 mb-4 px-2">
